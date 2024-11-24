@@ -1,0 +1,79 @@
+-- Create the Employee table
+CREATE TABLE Employee (
+    emp_no INT PRIMARY KEY,
+    name VARCHAR(100),
+    skill VARCHAR(50),
+    pay_rate DECIMAL(10, 2)
+);
+
+-- Create the Position table
+CREATE TABLE Position (
+    posting_no INT PRIMARY KEY,
+    skill VARCHAR(50)
+);
+
+-- Create the Duty_allocation table
+CREATE TABLE Duty_allocation (
+    posting_no INT,
+    emp_no INT,
+    day DATE,
+    shift VARCHAR(50),
+    PRIMARY KEY (posting_no, emp_no, day),
+    FOREIGN KEY (emp_no) REFERENCES Employee(emp_no),
+    FOREIGN KEY (posting_no) REFERENCES Position(posting_no)
+);
+
+-- Insert sample data into Employee table
+INSERT INTO Employee (emp_no, name, skill, pay_rate) VALUES
+(1, 'John Doe', 'Developer', 50000.00),
+(2, 'Jane Smith', 'Developer', 45000.00),
+(3, 'XYZ', 'Designer', 40000.00),
+(4, 'Alice Brown', 'Developer', 60000.00),
+(5, 'Bob White', 'Designer', 45000.00);
+
+-- Insert sample data into Position table
+INSERT INTO Position (posting_no, skill) VALUES
+(101, 'Developer'),
+(102, 'Designer');
+
+-- Insert sample data into Duty_allocation table
+INSERT INTO Duty_allocation (posting_no, emp_no, day, shift) VALUES
+(101, 1, '2024-11-25', 'Morning'),
+(101, 2, '2024-11-25', 'Afternoon'),
+(101, 4, '2024-11-25', 'Morning'),
+(102, 3, '2024-11-25', 'Evening'),
+(102, 5, '2024-11-25', 'Night');
+
+
+
+-- 1. Find the shift for the employee 'XYZ':
+SELECT da.shift
+FROM Duty_allocation da
+JOIN Employee e ON da.emp_no = e.emp_no
+WHERE e.name = 'XYZ';
+
+-- 2. Get count of different employees for each shift:
+SELECT da.shift, COUNT(DISTINCT da.emp_no) AS num_employees
+FROM Duty_allocation da
+GROUP BY da.shift;
+
+-- 3. Find the employee eligible to fill a position:
+SELECT e.emp_no, e.name
+FROM Employee e
+JOIN Position p ON e.skill = p.skill
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM Duty_allocation da
+    WHERE da.emp_no = e.emp_no AND da.posting_no = p.posting_no
+);
+
+-- 4. Find the employee with the lowest pay rate:
+SELECT e.emp_no, e.name, e.pay_rate
+FROM Employee e
+WHERE e.pay_rate = (SELECT MIN(pay_rate) FROM Employee);
+
+-- 5. Find the name and rate of pay of all employees who are allocated to duty:
+SELECT e.name, e.pay_rate
+FROM Employee e
+JOIN Duty_allocation da ON e.emp_no = da.emp_no;
+
