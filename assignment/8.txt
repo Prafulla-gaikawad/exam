@@ -1,0 +1,84 @@
+-- Step 1: Create the projects table (Fix missing table)
+CREATE TABLE IF NOT EXISTS projects (
+    ProjectID INT AUTO_INCREMENT PRIMARY KEY,
+    ProjectName VARCHAR(255),
+    Description TEXT,
+    FacultyID INT,
+    Deadline DATE
+);
+
+-- Step 2: Create the SimpleProjectView (this will work after creating the projects table)
+CREATE VIEW SimpleProjectView AS
+SELECT
+    ProjectID,
+    ProjectName,
+    Description,
+    Deadline
+FROM
+    projects;
+
+-- Step 3: Update the Deadline field using the SimpleProjectView
+UPDATE SimpleProjectView
+SET Deadline = '2025-01-15'
+WHERE ProjectID = 1;
+
+-- Step 4: Verify the update in the projects table
+SELECT * FROM projects WHERE ProjectID = 1;
+
+-- Step 5: Insert sample data into projects table
+INSERT INTO projects (ProjectName, Description, FacultyID, Deadline)
+VALUES
+    ('AI Research', 'Research on AI advancements', 1, '2025-06-01'),
+    ('Blockchain Project', 'Exploring blockchain technology', 2, '2025-12-31');
+
+-- Step 6: Create the faculty table (fix if table already exists)
+CREATE TABLE IF NOT EXISTS faculty (
+    FacultyID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(255)
+);
+
+-- Step 7: Insert sample data into faculty table
+INSERT INTO faculty (Name)
+VALUES
+    ('Dr. John Doe'),
+    ('Dr. Jane Smith');
+
+-- Step 8: Create the teams table (fix if table already exists)
+CREATE TABLE IF NOT EXISTS teams (
+    TeamID INT AUTO_INCREMENT PRIMARY KEY,
+    TeamName VARCHAR(255),
+    FacultyID INT
+);
+
+-- Step 9: Insert sample data into teams table
+INSERT INTO teams (TeamName, FacultyID)
+VALUES
+    ('AI Team', 1),
+    ('Blockchain Team', 2);
+
+-- Step 10: Create the ProjectDetails view (join projects, faculty, and teams)
+CREATE VIEW ProjectDetails AS
+SELECT
+    p.ProjectID,
+    p.ProjectName,
+    p.Description,
+    f.Name AS FacultyName,
+    t.TeamName
+FROM
+    projects p
+JOIN faculty f ON p.FacultyID = f.FacultyID
+JOIN teams t ON t.FacultyID = f.FacultyID;
+
+-- Step 11: View the data in ProjectDetails
+SELECT * FROM ProjectDetails;
+
+-- Step 12: Update the ProjectName for ProjectID = 1
+UPDATE projects
+SET ProjectName = 'Updated AI Research Project'
+WHERE ProjectID = 1;
+
+-- Step 13: Verify the update in the projects table
+SELECT * FROM projects WHERE ProjectID = 1;
+
+-- Step 14: Verify the changes in the ProjectDetails view (this will reflect the updated ProjectName)
+SELECT * FROM ProjectDetails;
