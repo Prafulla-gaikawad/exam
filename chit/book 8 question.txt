@@ -1,0 +1,62 @@
+-- Step 1: Create the database and use it
+CREATE DATABASE books;
+USE books;
+
+-- Assuming the schema is already created, we will move directly to the tasks.
+
+-- 1. Display books with title having minimum 10 characters
+SELECT Title
+FROM Book
+WHERE LENGTH(Title) >= 10;
+
+-- 2. Display book titles with the lowest price
+SELECT Title
+FROM Book
+WHERE Price = (SELECT MIN(Price) FROM Book);
+
+-- 3. Display the total number of books in the library
+SELECT SUM(Quantity) AS TotalBooks
+FROM Book;
+
+-- 4. Display PRNNO and Barcode of books issued and returned on the same date
+SELECT i.PRNNO, i.BarCode
+FROM Issue i
+WHERE i.IssueDate = i.RetDate;
+
+-- 5. Display PRNNO and Barcode for the books which are issued but not returned
+SELECT i.PRNNO, i.BarCode
+FROM Issue i
+WHERE i.RetDate IS NULL;
+
+-- 6. Display the total fine paid by every student
+SELECT s.PRNNO, SUM(i.Fine) AS TotalFinePaid
+FROM Student s
+JOIN Issue i ON s.PRNNO = i.PRNNO
+GROUP BY s.PRNNO;
+
+-- 7. Display the average fine collected
+SELECT AVG(Fine) AS AverageFine
+FROM Issue;
+
+-- 8. Display book titles along with their publishers whose price is greater than some books published by ‘Oxford’
+-- a) Using Tuple Variable (Subquery)
+SELECT b.Title, p.PubName
+FROM Book b
+JOIN Publisher p ON b.PID = p.PubID
+WHERE b.Price > (
+    SELECT MIN(b2.Price)
+    FROM Book b2
+    JOIN Publisher p2 ON b2.PID = p2.PubID
+    WHERE p2.PubName = 'Oxford'
+);
+
+-- b) Without Using Tuple Variable (Using JOIN)
+SELECT b.Title, p.PubName
+FROM Book b
+JOIN Publisher p ON b.PID = p.PubID
+WHERE b.Price > (
+    SELECT MIN(b2.Price)
+    FROM Book b2
+    JOIN Publisher p2 ON b2.PID = p2.PubID
+    WHERE p2.PubName = 'Oxford'
+);
