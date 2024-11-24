@@ -1,0 +1,67 @@
+-- Step 1: Create and use the database
+CREATE DATABASE Trigg;
+USE Trigg;
+
+-- Step 2: Create the required tables
+CREATE TABLE Users (
+    UserID INT PRIMARY KEY AUTO_INCREMENT,
+    UserName VARCHAR(50),
+    Email VARCHAR(100),
+    Role VARCHAR(20)
+);
+
+CREATE TABLE UserLogs (
+    LogID INT PRIMARY KEY AUTO_INCREMENT,
+    UserID INT,
+    Action VARCHAR(50),
+    Timestamp DATETIME
+);
+
+CREATE TABLE AuditLogs (
+    AuditID INT PRIMARY KEY AUTO_INCREMENT,
+    Action VARCHAR(50),
+    TotalUsers INT,
+    Timestamp DATETIME
+);
+
+-- Step 3: Create Triggers
+
+-- Trigger 1: Log new user addition into the UserLogs table
+DELIMITER $$
+CREATE TRIGGER after_user_insert
+AFTER INSERT ON Users
+FOR EACH ROW
+BEGIN
+    -- Log the new user addition into the UserLogs table
+    INSERT INTO UserLogs (UserID, Action, Timestamp)
+    VALUES (NEW.UserID, 'User Added', NOW());
+END;
+$$
+DELIMITER ;
+
+-- Trigger 2: Update AuditLogs after every insert (bulk or single-row)
+DELIMITER $$
+CREATE TRIGGER after_user_insert_audit
+AFTER INSERT ON Users
+FOR EACH ROW
+BEGIN
+    -- Count total users in the Users table
+    DECLARE total_users INT;
+    SELECT COUNT(*) INTO total_users FROM Users;
+    
+    -- Insert the audit record
+    INSERT INTO AuditLogs (Action, TotalUsers, Timestamp)
+    VALUES ('User Inserted', total_users, NOW());
+END;
+$$
+DELIMITER ;
+
+-- Step 4: Insert sample data
+INSERT INTO Users (UserName, Email, Role)
+VALUES ('Alice', 'alice@example.com', 'Student'),
+       ('Bob', 'bob@example.com', 'Faculty');
+
+-- Step 5: View the tables
+SELECT * FROM UserLogs;
+SELECT * FROM AuditLogs;
+SELECT * FROM Users;
