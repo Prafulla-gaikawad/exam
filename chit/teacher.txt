@@ -1,0 +1,56 @@
+CREATE DATABASE teacher;
+USE teacher;
+
+CREATE TABLE teacher_info (
+    Teacher_id VARCHAR(5) PRIMARY KEY,
+    Teacher_name VARCHAR(50),
+    Branch VARCHAR(50),
+    Sal INT,
+    Status VARCHAR(2)
+);
+
+INSERT INTO teacher_info (Teacher_id, Teacher_name, Branch, Sal, Status) VALUES
+('t01', 'Ravi', 'IT', 20000, 'A'),
+('t02', 'Anju', 'COMP', 10000, 'NA'),
+('t03', 'Anil', 'IT', 1000, 'NA'),
+('t04', 'Ravi', 'IT', 10000, 'NA'),
+('t05', 'Raman', 'COMP', 50000, 'A');
+
+-- 1. Find the details of teacher having 10000 salary
+SELECT * FROM teacher_info WHERE Sal = 10000;
+
+ -- 2. Find the teacher with status A and salary 50000
+SELECT * FROM teacher_info WHERE Status = 'A' AND Sal = 50000;
+
+--  3. Find the teacher salary > 20000
+SELECT * FROM teacher_info WHERE Sal > 20000;
+
+ -- 4. Find the teachers with status A with salary ascending
+SELECT * FROM teacher_info WHERE Status = 'A' ORDER BY Sal ASC;
+
+ -- 5. Count the total number of teachers
+SELECT COUNT(*) AS Total_Teachers FROM teacher_info;
+
+ -- 6. Update the department of teachers to EnTc where salary greater than 20000
+SET SQL_SAFE_UPDATES = 0;
+
+UPDATE teacher_info
+SET Branch = 'EnTc'
+WHERE Sal > 20000;
+
+-- 7. Increment the salary of teachers with 10000 whose status is “A”
+UPDATE teacher_info
+SET Sal = Sal + 10000
+WHERE Status = 'A';
+
+ -- 8. Addafield called joining date in teacher_info collection
+ALTER TABLE teacher_info
+ADD joining_date DATE;
+
+ -- 9. Delete teacher with id to4
+DELETE FROM teacher_info
+WHERE Teacher_id = 't04';
+
+-- 10. Drop table teacher_info
+DROP TABLE teacher_info;
+
