@@ -1,0 +1,108 @@
+CREATE DATABASE EMP;
+USE EMP;
+
+CREATE TABLE employee(
+emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE department(
+dept_id INT PRIMARY KEY,
+    dept_name VARCHAR(100) NOT NULL,
+    dept_loc VARCHAR(50)
+);
+
+CREATE TABLE paydetails(
+emp_id INT,
+    dept_id INT,
+    basic INT CHECK(basic >= 0),
+    deductions INT CHECK(deductions >= 0),
+    additions INT CHECK(additions >= 0),
+    DOJ DATE,
+    PRIMARY KEY(emp_id,dept_id),
+    FOREIGN KEY (emp_id) REFERENCES employee(emp_id),
+    FOREIGN KEY (dept_id) REFERENCES department(dept_id)
+);
+ 
+ 
+CREATE TABLE payroll(
+emp_id INT,
+    pay_date DATE,
+    PRIMARY KEY (emp_id,pay_date),
+    FOREIGN KEY (emp_id) REFERENCES employee(emp_id)
+);
+
+ -- Insert around 10 records in each of the tables
+ INSERT INTO employee
+ VALUES
+ (1, 'Alice'), (2, 'Bob'), (3, 'Charlie'), (4, 'Diana'),
+(5, 'Eve'), (6, 'Frank'), (7, 'Grace'), (8, 'Hank'), (9, 'Ivy'), (10, 'Jack');
+
+-- Insert data into department table
+INSERT INTO department VALUES (1, 'HR', 'Mumbai'), (2, 'Finance', 'Delhi'),
+(3, 'IT', 'Bangalore'), (4, 'Marketing', 'Pune'), (5, 'Sales', 'Hyderabad');
+
+-- Insert data into paydetails table
+INSERT INTO paydetails VALUES
+(1, 1, 12000, 2000, 1500, '2021-06-15'),
+(2, 2, 15000, 2500, 2000, '2020-08-01'),
+(3, 3, 18000, 3000, 2500, '2022-01-10'),
+(4, 4, 10000, 1500, 1000, '2023-03-01'),
+(5, 5, 25000, 5000, 3000, '2019-11-20'),
+(6, 1, 9000, 1000, 800, '2021-09-15'),
+(7, 2, 15000, 1800, 1200, '2020-05-10'),
+(8, 3, 20000, 4000, 2000, '2021-12-25'),
+(9, 4, 11000, 1200, 1000, '2023-07-01'),
+(10, 5, 14000, 3000, 1500, '2022-10-12');
+
+-- Insert data into payroll table
+INSERT INTO payroll VALUES
+(1, '2024-11-01'), (2, '2024-11-01'), (3, '2024-11-01'),
+(4, '2024-11-01'), (5, '2024-11-01'), (6, '2024-11-01'),
+(7, '2024-11-01'), (8, '2024-11-01'), (9, '2024-11-01'),
+(10, '2024-11-01');
+
+ -- c) List the employee details department wise
+SELECT e.emp_id, e.emp_name, d.dept_name, d.dept_loc
+FROM employee e
+JOIN paydetails p ON e.emp_id = p.emp_id
+JOIN department d ON p.dept_id = d.dept_id
+ORDER BY d.dept_name;
+
+ -- d) List all the employee names who joined after particular date
+SELECT e.emp_name, p.DOJ
+FROM employee e
+JOIN paydetails p ON e.emp_id = p.emp_id
+WHERE p.DOJ > '2022-01-01';
+
+ -- e) List the details of employees whose basic salary is between 10,000 and 20,000
+SELECT e.emp_id, e.emp_name, p.basic
+FROM employee e
+JOIN paydetails p ON e.emp_id = p.emp_id
+WHERE p.basic BETWEEN 10000 AND 20000;
+
+ -- f) Give a count of how many employees are working in each department
+SELECT d.dept_name, COUNT(p.emp_id) AS employee_count
+FROM department d
+JOIN paydetails p ON d.dept_id = p.dept_id
+GROUP BY d.dept_name;
+
+ -- g) Give a names of the employees whose netsalary>10,000
+SELECT e.emp_name, (p.basic + p.additions - p.deductions) AS netsalary
+FROM employee e
+JOIN paydetails p ON e.emp_id = p.emp_id
+WHERE (p.basic + p.additions - p.deductions) > 10000;
+
+ -- h) List the details for an employee_id=5
+SELECT e.emp_id, e.emp_name, p.*
+FROM employee e
+JOIN paydetails p ON e.emp_id = p.emp_id
+WHERE e.emp_id = 5;
+
+-- i) Create a view which lists the emp_name and his netsalary
+CREATE VIEW employee_netsalary AS
+SELECT e.emp_name, (p.basic + p.additions - p.deductions) AS netsalary
+FROM employee e
+JOIN paydetails p ON e.emp_id = p.emp_id;
+
+SELECT * FROM employee_netsalary;
