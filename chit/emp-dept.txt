@@ -1,0 +1,131 @@
+CREATE DATABASE CompanyDB;
+USE CompanyDB;
+
+-- Table: dept
+CREATE TABLE dept (
+    dept_no INT PRIMARY KEY,
+    proj_no INT,
+    dname VARCHAR(50),
+    loc VARCHAR(50),
+    mgrcode INT
+);
+
+-- Table: project
+CREATE TABLE project (
+    proj_no INT PRIMARY KEY,
+    proj_name VARCHAR(50),
+    status VARCHAR(20)
+);
+
+-- Table: emp
+CREATE TABLE emp (
+    emp_no INT PRIMARY KEY,
+    ename VARCHAR(50),
+    designation VARCHAR(50),
+    dept_no INT,
+    proj_no INT,
+    FOREIGN KEY (dept_no) REFERENCES dept(dept_no),
+    FOREIGN KEY (proj_no) REFERENCES project(proj_no)
+);
+
+-- Insert data into dept table
+INSERT INTO dept VALUES
+(1, 101, 'INVENTORY', 'PUNE', 11),
+(2, 102, 'MARKETING', 'MUMBAI', 12),
+(3, 103, 'HR', 'BANGALORE', 13),
+(4, 104, 'SALES', 'CHENNAI', 14),
+(5, 105, 'IT', 'DELHI', 15);
+
+-- Insert data into project table
+INSERT INTO project VALUES
+(101, 'Inventory Management', 'COMPLETE'),
+(102, 'Marketing Campaign', 'INCOMPLETE'),
+(103, 'Recruitment Drive', 'COMPLETE'),
+(104, 'Sales Report', 'INCOMPLETE'),
+(105, 'IT Infrastructure', 'COMPLETE'),
+(106, 'Blood Bank', 'INCOMPLETE');
+
+-- Insert data into emp table
+INSERT INTO emp VALUES
+(1, 'Alice', 'Manager', 1, 101),
+(2, 'Bob', 'Assistant', 1, 101),
+(3, 'Charlie', 'Executive', 2, 102),
+(4, 'Diana', 'Analyst', 3, 103),
+(5, 'Eve', 'Manager', 2, 102),
+(6, 'Frank', 'Analyst', 4, 104),
+(7, 'Grace', 'Manager', 3, 103),
+(8, 'Hank', 'Assistant', 5, 105),
+(9, 'Ivy', 'Executive', 5, 106),
+(10, 'Jack', 'Intern', 2, 106);
+
+-- a) List all employees of ‘INVENTORY’ department of ‘PUNE’ location.
+SELECT e.emp_no, e.ename, e.designation
+FROM emp e
+JOIN dept d ON e.dept_no = d.dept_no
+WHERE d.dname = 'INVENTORY' AND d.loc = 'PUNE';
+
+ -- b) Give the names of employees who are working on ‘Blood Bank’ project.
+SELECT e.emp_no, e.ename, e.designation
+FROM emp e
+JOIN project p ON e.proj_no = p.proj_no
+WHERE p.proj_name = 'Blood Bank';
+
+-- c) Given the name of managers from ‘MARKETING’ department
+SELECT e.emp_no, e.ename, e.designation
+FROM emp e
+JOIN dept d ON e.dept_no = d.dept_no
+WHERE d.dname = 'MARKETING' AND e.designation = 'Manager';
+
+ -- d) Give all the employees working under status ‘INCOMPLETE’ projects.
+SELECT e.emp_no, e.ename, e.designation
+FROM emp e
+JOIN project p ON e.proj_no = p.proj_no
+WHERE p.status = 'INCOMPLETE';
+
+ -- e) Display all employees department wise.
+SELECT d.dname, e.emp_no, e.ename, e.designation
+FROM dept d
+LEFT JOIN emp e ON d.dept_no = e.dept_no
+ORDER BY d.dname;
+
+ -- f) Find out all employees category depart wise
+SELECT d.dname, e.designation, COUNT(e.emp_no) AS employee_count
+FROM dept d
+JOIN emp e ON d.dept_no = e.dept_no
+GROUP BY d.dname, e.designation;
+
+-- g) Find out Project status of every department.
+SELECT d.dname, p.proj_name, p.status
+FROM dept d
+JOIN project p ON d.proj_no = p.proj_no
+ORDER BY d.dname;
+
+-- h) Write the queries of inner join, outer join and full join.
+-- 1.inner join
+SELECT e.emp_no, e.ename, d.dname
+FROM emp e
+INNER JOIN dept d ON e.dept_no = d.dept_no;
+
+-- 2.left outer join
+SELECT e.emp_no, e.ename, d.dname
+FROM emp e
+LEFT JOIN dept d ON e.dept_no = d.dept_no;
+
+-- 3.right outer join
+SELECT e.emp_no, e.ename, d.dname
+FROM emp e
+RIGHT JOIN dept d ON e.dept_no = d.dept_no;
+
+-- 4.full outer join
+SELECT e.emp_no, e.ename, d.dname
+FROM emp e
+LEFT JOIN dept d ON e.dept_no = d.dept_no
+UNION
+SELECT e.emp_no, e.ename, d.dname
+FROM emp e
+RIGHT JOIN dept d ON e.dept_no = d.dept_no;
+
+-- i) Arrange Employee name in ascending and designation in descending order.
+SELECT e.emp_no, e.ename, e.designation
+FROM emp e
+ORDER BY e.ename ASC, e.designation DESC;
