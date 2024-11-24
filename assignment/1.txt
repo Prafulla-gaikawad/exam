@@ -1,0 +1,72 @@
+CREATE TABLE Users (
+    UserID INT PRIMARY KEY,
+    UserName VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Role VARCHAR(50) NOT NULL CHECK (Role IN ('Student', 'Faculty', 'Admin'))
+);
+
+-- Create the Projects table
+CREATE TABLE Projects (
+    ProjectID INT PRIMARY KEY,
+    ProjectName VARCHAR(100) NOT NULL,
+    Description TEXT,
+    FacultyID INT,
+    Deadline DATE,
+    FOREIGN KEY (FacultyID) REFERENCES Users(UserID)
+);
+
+-- Create the Teams table
+CREATE TABLE Teams (
+    TeamID INT PRIMARY KEY,
+    TeamName VARCHAR(100) NOT NULL,
+    ProjectID INT,
+    FOREIGN KEY (ProjectID) REFERENCES Projects(ProjectID)
+);
+
+-- Create the TeamMembers table
+CREATE TABLE TeamMembers (
+    TeamID INT,
+    UserID INT,
+    PRIMARY KEY(TeamID, UserID),
+    FOREIGN KEY (TeamID) REFERENCES Teams(TeamID),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+-- Create the Tasks table
+CREATE TABLE Tasks (
+    TaskID INT PRIMARY KEY,
+    TaskName VARCHAR(100) NOT NULL,
+    Description TEXT,
+    Status VARCHAR(50) NOT NULL CHECK (Status IN ('Pending', 'In Progress', 'Completed')),
+    AssignedTo INT,
+    TeamID INT,
+    ProjectID INT,
+    FOREIGN KEY (AssignedTo) REFERENCES Users(UserID),
+    FOREIGN KEY (TeamID) REFERENCES Teams(TeamID),
+    FOREIGN KEY (ProjectID) REFERENCES Projects(ProjectID)
+);
+
+-- Create a trigger to enforce the deadline constraint
+DELIMITER //
+
+CREATE TRIGGER CheckDeadlineBeforeInsert
+BEFORE INSERT ON Projects
+FOR EACH ROW
+BEGIN
+    IF NEW.Deadline <= CURRENT_DATE THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Deadline must be greater than the current date';
+    END IF;
+END; //
+
+CREATE TRIGGER CheckDeadlineBeforeUpdate
+BEFORE UPDATE ON Projects
+FOR EACH ROW
+BEGIN
+    IF NEW.Deadline <= CURRENT_DATE THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Deadline must be greater than the current date';
+    END IF;
+END; //
+
+DELIMITER ;
