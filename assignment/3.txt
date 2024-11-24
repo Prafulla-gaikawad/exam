@@ -1,0 +1,63 @@
+-- 1. Count total users
+SELECT COUNT(*) AS TotalUsers 
+FROM Users;
+
+-- 2. Count users by role
+SELECT Role, COUNT(*) AS UserCount
+FROM Users
+GROUP BY Role;
+
+-- 3. Count tasks by status
+SELECT Status, COUNT(*) AS TaskCount
+FROM Tasks
+GROUP BY Status;
+
+-- 4. Average days until the deadline
+SELECT AVG(DATEDIFF(Deadline, NOW())) AS AvgDaysUntilDeadline
+FROM Projects;
+
+-- 5. Average team size
+SELECT AVG(MemberCount) AS AvgTeamSize
+FROM (
+    SELECT TeamID, COUNT(UserID) AS MemberCount
+    FROM TeamMembers
+    GROUP BY TeamID
+) AS TeamSizes;
+
+-- 6. Total team members
+SELECT SUM(MemberCount) AS TotalTeamMembers
+FROM (
+    SELECT TeamID, COUNT(UserID) AS MemberCount
+    FROM TeamMembers
+    GROUP BY TeamID
+) AS TeamSizes;
+
+-- 7. Count tasks assigned to each user
+SELECT AssignedTo, COUNT(*) AS TasksAssigned
+FROM Tasks
+GROUP BY AssignedTo;
+
+-- 8. Select projects with deadlines in the current month
+SELECT *
+FROM Projects
+WHERE MONTH(Deadline) = MONTH(NOW()) AND YEAR(Deadline) = YEAR(NOW());
+
+-- 9. Select tasks with a specific date (adjusted to match 2024-11-22)
+SELECT *
+FROM Tasks
+WHERE DATE(NOW()) = DATE('2024-11-22');
+
+-- 10. Display current date and time
+SELECT NOW() AS CurrentDateTime;
+
+-- 11. Count tasks by status where there are more than one task
+SELECT Status, COUNT(*) AS TaskCount
+FROM Tasks
+GROUP BY Status
+HAVING COUNT(*) > 1;
+
+-- 12. List teams with more than one member
+SELECT TeamID, COUNT(UserID) AS MemberCount
+FROM TeamMembers
+GROUP BY TeamID
+HAVING COUNT(UserID) > 1;
