@@ -1,0 +1,144 @@
+-- Step 1: Create the tables
+CREATE TABLE Users (
+    UserID INT PRIMARY KEY AUTO_INCREMENT,
+    UserName VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE TeamMembers (
+    MemberID INT PRIMARY KEY AUTO_INCREMENT,
+    UserID INT NOT NULL,
+    TeamID INT NOT NULL,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+CREATE TABLE Teams (
+    TeamID INT PRIMARY KEY AUTO_INCREMENT,
+    TeamName VARCHAR(255) NOT NULL,
+    ProjectID INT NOT NULL
+);
+
+CREATE TABLE Projects (
+    ProjectID INT PRIMARY KEY AUTO_INCREMENT,
+    ProjectName VARCHAR(255) NOT NULL,
+    Deadline DATE NOT NULL
+);
+
+CREATE TABLE Tasks (
+    TaskID INT PRIMARY KEY AUTO_INCREMENT,
+    TaskName VARCHAR(255) NOT NULL,
+    AssignedTo INT,
+    FOREIGN KEY (AssignedTo) REFERENCES Users(UserID)
+);
+
+-- Step 2: Insert sample data
+-- Insert into Users table
+INSERT INTO Users (UserName) VALUES 
+('Alice'),
+('Bob'),
+('Charlie'),
+('David'),
+('Eve');
+
+-- Insert into Projects table
+INSERT INTO Projects (ProjectName, Deadline) VALUES 
+('AI Research Project', '2024-09-15'),
+('Blockchain Project', '2024-08-20'),
+('Quantum Computing', '2024-10-01'),
+('Cybersecurity Initiative', '2024-07-30');
+
+-- Insert into Teams table
+INSERT INTO Teams (TeamName, ProjectID) VALUES 
+('Alpha', 1),
+('Beta', 2),
+('Gamma', 3),
+('Delta', 4);
+
+-- Insert into TeamMembers table
+INSERT INTO TeamMembers (UserID, TeamID) VALUES 
+(1, 1),
+(2, 1),
+(3, 2),
+(4, 3),
+(5, 4);
+
+-- Insert into Tasks table
+INSERT INTO Tasks (TaskName, AssignedTo) VALUES 
+('Design Architecture', 1),
+('Develop Algorithms', 2),
+('Write Documentation', 3),
+('Perform Testing', 4),
+('Launch Product', 1),
+('Debugging', NULL);
+
+-- Step 3: Queries
+
+-- Query 1: Select users who are part of projects with deadlines after '2024-09-01'
+SELECT UserID, UserName
+FROM Users
+WHERE UserID IN (
+    SELECT UserID
+    FROM TeamMembers
+    WHERE TeamID IN (
+        SELECT TeamID
+        FROM Teams
+        WHERE ProjectID IN (
+            SELECT ProjectID
+            FROM Projects
+            WHERE Deadline > '2024-09-01'
+        )
+    )
+);
+
+-- Query 2: Select users who are not part of any team
+SELECT UserID, UserName
+FROM Users
+WHERE UserID NOT IN (
+    SELECT UserID
+    FROM TeamMembers
+);
+
+-- Query 3: Select tasks where AssignedTo matches at least one UserID from Users
+SELECT TaskID, TaskName
+FROM Tasks
+WHERE AssignedTo IN (
+    SELECT UserID
+    FROM Users
+);
+
+-- Query 4: Select projects with deadlines earlier than all other project deadlines
+SELECT ProjectName, Deadline
+FROM Projects
+WHERE Deadline < ALL (
+    SELECT Deadline
+    FROM Projects AS OtherProjects
+    WHERE OtherProjects.ProjectID != Projects.ProjectID
+);
+
+-- Query 5: Select team names that appear only once
+SELECT TeamName
+FROM Teams
+GROUP BY TeamName
+HAVING COUNT(TeamName) = 1;
+
+-- Query 6: Select tasks assigned to more than one user
+SELECT TaskID, COUNT(AssignedTo) AS AssignedUsers
+FROM Tasks
+GROUP BY TaskID
+HAVING COUNT(AssignedTo) > 1;
+
+-- Query 7: Select tasks assigned to users who are part of the 'AI Research Project' team
+SELECT TaskName
+FROM Tasks
+WHERE AssignedTo IN (
+    SELECT UserID
+    FROM TeamMembers
+    WHERE TeamID IN (
+        SELECT TeamID
+        FROM Teams
+        WHERE ProjectID = (
+            SELECT ProjectID
+            FROM Projects
+            WHERE ProjectName = 'AI Research Project'
+        )
+    )
+);
