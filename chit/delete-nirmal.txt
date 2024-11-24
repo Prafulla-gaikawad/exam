@@ -1,0 +1,157 @@
+-- Step 1: Create the database and use it
+CREATE DATABASE books;
+USE books;
+
+-- Table: Publisher
+CREATE TABLE Publisher (
+    PubID INT PRIMARY KEY,
+    PubName VARCHAR(100),
+    PCity VARCHAR(50),
+    PEmail VARCHAR(100)
+);
+
+-- Table: Book
+CREATE TABLE Book (
+    ISBNNO INT PRIMARY KEY,
+    Title VARCHAR(100),
+    PID INT,
+    Edition INT,
+    Price DECIMAL(10, 2),
+    Quantity INT,
+    FOREIGN KEY (PID) REFERENCES Publisher(PubID)
+);
+
+-- Table: Book_Detail
+CREATE TABLE Book_Detail (
+    BarCode INT PRIMARY KEY,
+    ISBNNO INT,
+    FOREIGN KEY (ISBNNO) REFERENCES Book(ISBNNO)
+);
+
+-- Table: Author
+CREATE TABLE Author (
+    AuthorID INT PRIMARY KEY,
+    AName VARCHAR(100),
+    AEmail VARCHAR(100)
+);
+
+-- Table: Student
+CREATE TABLE Student (
+    SName VARCHAR(100),
+    RollNo INT,
+    Branch VARCHAR(50),
+    Year INT,
+    PRNNO INT PRIMARY KEY
+);
+
+-- Table: Issue
+CREATE TABLE Issue (
+    TRXID INT PRIMARY KEY,
+    PRNNO INT,
+    BarCode INT,
+    IssueDate DATE,
+    RetDate DATE,
+    Fine DECIMAL(10, 2),
+    FOREIGN KEY (PRNNO) REFERENCES Student(PRNNO),
+    FOREIGN KEY (BarCode) REFERENCES Book_Detail(BarCode)
+);
+
+-- Table: WrittenBy
+CREATE TABLE WrittenBy (
+    AuthorID INT,
+    ISBNNO INT,
+    PRIMARY KEY (AuthorID, ISBNNO),
+    FOREIGN KEY (AuthorID) REFERENCES Author(AuthorID),
+    FOREIGN KEY (ISBNNO) REFERENCES Book(ISBNNO)
+);
+
+-- Step 2: Remove all records where Publisher Name is 'Nirali'
+DELETE FROM Publisher
+WHERE PubName = 'Nirali';
+
+-- Step 3: Increase price of the book by Rs. 200 for 2nd edition and reduce price by Rs.10 for 1st edition of some book
+UPDATE Book
+SET Price = Price + 200
+WHERE Edition = 2;
+
+UPDATE Book
+SET Price = Price - 10
+WHERE Edition = 1;
+
+-- Step 4: Display Book titles whose price is Less than some books published by publisher 'Oxford'
+-- a) Using Tuple Variable
+SELECT b.Title
+FROM Book b
+WHERE b.Price < (
+    SELECT b2.Price
+    FROM Book b2
+    JOIN Publisher p ON b2.PID = p.PubID
+    WHERE p.PubName = 'Oxford'
+    LIMIT 1
+);
+
+-- b) Without Using Tuple Variable
+SELECT b.Title
+FROM Book b
+JOIN Publisher p ON b.PID = p.PubID
+WHERE b.Price < (
+    SELECT MIN(b2.Price)
+    FROM Book b2
+    JOIN Publisher p2 ON b2.PID = p2.PubID
+    WHERE p2.PubName = 'Oxford'
+);
+
+-- Step 5: Display books with title having the word 'database'
+SELECT Title
+FROM Book
+WHERE Title LIKE '%database%';
+
+-- Step 6: Display book titles and respective authors
+SELECT b.Title, a.AName
+FROM Book b
+JOIN WrittenBy w ON b.ISBNNO = w.ISBNNO
+JOIN Author a ON w.AuthorID = a.AuthorID;
+
+-- Step 7: Display student names and their roll numbers with fine in sorted order (Maximum fine to Minimum Fine)
+SELECT s.SName, s.RollNo, i.Fine
+FROM Student s
+JOIN Issue i ON s.PRNNO = i.PRNNO
+ORDER BY i.Fine DESC;
+
+-- Step 8: Display common names in Author Names and Student Names
+SELECT a.AName
+FROM Author a
+JOIN Student s ON a.AName = s.SName;
+
+-- Step 9: Display total number of publishers
+SELECT COUNT(*) AS TotalPublishers
+FROM Publisher;
+
+-- Optional Step: Add attribute MobileNo & City in students (default value for city = 'Pune')
+ALTER TABLE Student
+ADD MobileNo VARCHAR(15),
+ADD City VARCHAR(50) DEFAULT 'Pune';
+
+-- Step 10: Remove City attribute from students
+ALTER TABLE Student
+DROP COLUMN City;
+
+-- Step 11: Add unique constraints for email of authors
+ALTER TABLE Author
+ADD CONSTRAINT Unique_AEmail UNIQUE (AEmail);
+
+-- Step 12: Change the existing Date Format for IssueDate and RetDate
+SELECT DATE_FORMAT(IssueDate, '%d-%m-%Y') AS IssueDate,
+       DATE_FORMAT(RetDate, '%d-%m-%Y') AS RetDate
+FROM Issue;
+
+-- Step 13: Create virtual table “StudentData” showing SName, PRNNO, Year for Students
+CREATE VIEW StudentData AS
+SELECT SName, PRNNO, Year
+FROM Student;
+
+-- Step 14: Create virtual table ”BookData” showing book Title and publisher name for all books
+CREATE VIEW BookData AS
+SELECT b.Title, p.PubName
+FROM Book b
+JOIN Publisher p ON b.PID = p.PubID;
