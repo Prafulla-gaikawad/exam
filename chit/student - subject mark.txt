@@ -1,0 +1,68 @@
+CREATE DATABASE student_db;
+USE student_db;
+
+CREATE TABLE student (
+    sid INT PRIMARY KEY,
+    sname VARCHAR(50),
+    saddr VARCHAR(50),
+    smarks INT,
+    sage INT
+);
+
+INSERT INTO student (sid, sname, saddr, smarks, sage)
+VALUES
+(1, 'Ravi', 'Pune', 450, 20),
+(2, 'Anjali', 'Mumbai', 400, 22),
+(3, 'Amit', 'Pune', 500, 21),
+(4, 'Priya', 'Delhi', 380, 23),
+(5, 'Suresh', 'Pune', 420, 22),
+(6, 'Kiran', 'Chennai', 470, 24),
+(7, 'Neha', 'Pune', 390, 20);
+
+-- 1. Count the total number of students.
+SELECT COUNT(*) AS Total_Students FROM student;
+
+ -- 2. Count the number of students staying in pune
+SELECT COUNT(*) AS Students_in_Pune
+FROM student
+WHERE saddr = 'Pune';
+
+-- 3. Display the different cities of students
+SELECT DISTINCT saddr AS Cities
+FROM student;
+
+ -- 4. group by address and show the result in decreasing order.
+SELECT saddr AS Address, COUNT(*) AS Total_Students
+FROM student
+GROUP BY saddr
+ORDER BY Total_Students DESC;
+
+ -- 5. group by address and limit the result set to 2 rows
+SELECT saddr AS Address, COUNT(*) AS Total_Students
+FROM student
+GROUP BY saddr
+ORDER BY Total_Students DESC
+LIMIT 2;
+
+--  6. project increased marks of students by 100
+SELECT sid, sname, saddr, (smarks + 100) AS Increased_Marks, sage
+FROM student;
+
+ -- 7. project increased marks of students by 100 and decreased by 50
+SELECT sid, sname, saddr,
+       (smarks + 100) AS Increased_Marks,
+       (smarks - 50) AS Decreased_Marks,
+       sage
+FROM student;
+
+ -- 8. find the total marks of students grouped by city
+SELECT saddr AS Address, SUM(smarks) AS Total_Marks
+FROM student
+GROUP BY saddr;
+
+ -- 9. Find the maximum and minimum marks student city wise
+SELECT saddr AS Address,
+       MAX(smarks) AS Max_Marks,
+       MIN(smarks) AS Min_Marks
+FROM student
+GROUP BY saddr;
