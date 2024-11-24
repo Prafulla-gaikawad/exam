@@ -1,0 +1,94 @@
+CREATE DATABASE books;
+USE books;
+
+-- Table: Publisher
+CREATE TABLE Publisher (
+    PubID INT PRIMARY KEY,
+    PubName VARCHAR(100),
+    PCity VARCHAR(50),
+    PEmail VARCHAR(100)
+);
+
+-- Table: Book
+CREATE TABLE Book (
+    ISBNNO INT PRIMARY KEY,
+    Title VARCHAR(100),
+    PID INT,
+    Edition INT,
+    Price DECIMAL(10, 2),
+    Quantity INT,
+    FOREIGN KEY (PID) REFERENCES Publisher(PubID)
+);
+
+-- Table: Book_Detail
+CREATE TABLE Book_Detail (
+    BarCode INT PRIMARY KEY,
+    ISBNNO INT,
+    FOREIGN KEY (ISBNNO) REFERENCES Book(ISBNNO)
+);
+
+-- Table: Author
+CREATE TABLE Author (
+    AuthorID INT PRIMARY KEY,
+    AName VARCHAR(100),
+    AEmail VARCHAR(100)
+);
+
+-- Table: Student
+CREATE TABLE Student (
+    SName VARCHAR(100),
+    RollNo INT,
+    Branch VARCHAR(50),
+    Year INT,
+    PRNNO INT PRIMARY KEY
+);
+
+-- Table: Issue
+CREATE TABLE Issue (
+    TRXID INT PRIMARY KEY,
+    PRNNO INT,
+    BarCode INT,
+    IssueDate DATE,
+    RetDate DATE,
+    Fine DECIMAL(10, 2),
+    FOREIGN KEY (PRNNO) REFERENCES Student(PRNNO),
+    FOREIGN KEY (BarCode) REFERENCES Book_Detail(BarCode)
+);
+
+-- Table: WrittenBy
+CREATE TABLE WrittenBy (
+    AuthorID INT,
+    ISBNNO INT,
+    PRIMARY KEY (AuthorID, ISBNNO),
+    FOREIGN KEY (AuthorID) REFERENCES Author(AuthorID),
+    FOREIGN KEY (ISBNNO) REFERENCES Book(ISBNNO)
+);
+
+ -- b) Addattribute MobileNo & City in students(default value for city= 'Pune')
+ALTER TABLE Student
+ADD MobileNo VARCHAR(15),
+ADD City VARCHAR(50) DEFAULT 'Pune';
+
+ -- c) Remove City attribute from students
+ALTER TABLE Student
+DROP COLUMN City;
+
+ -- d) Addunique constraints for email of authors
+ALTER TABLE Author
+ADD CONSTRAINT Unique_AEmail UNIQUE (AEmail);
+
+-- e) Change the existing Date Format
+SELECT DATE_FORMAT(IssueDate, '%d-%m-%Y') AS IssueDate,
+       DATE_FORMAT(RetDate, '%d-%m-%Y') AS RetDate
+FROM Issue;
+
+ -- f) Create virtual table “StudentData” showing SName, PRNNO, Year for Students.
+CREATE VIEW StudentData AS
+SELECT SName, PRNNO, Year
+FROM Student;
+
+ -- g) Create virtual table ”BookData” showing book Title and publisher name for all books.
+CREATE VIEW BookData AS
+SELECT b.Title, p.PubName
+FROM Book b
+JOIN Publisher p ON b.PID = p.PubID;
