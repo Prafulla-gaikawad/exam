@@ -1,0 +1,139 @@
+-- B. Create a PL/SQL Function or Procedure to Find Sum of Numbers from 0 to 100
+DELIMITER $$
+
+CREATE FUNCTION sum_numbers()
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE total_sum INT;
+   
+    -- Ensure calculation is correct
+    SET total_sum = CAST((100 * (100 + 1)) / 2 AS UNSIGNED);
+   
+    RETURN total_sum;
+END$$
+
+DELIMITER ;
+
+
+SELECT sum_numbers() AS result;
+
+
+
+-- ------------------------------------------------------------
+
+CREATE TABLE customer (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    city VARCHAR(100),
+    credit DECIMAL(10, 2),
+    debit DECIMAL(10, 2)
+);
+
+INSERT INTO customer (name, city, credit, debit) VALUES
+('John Doe', 'New York', 5000.00, 5000.00),
+('Jane Smith', 'Los Angeles', 7000.00, 3000.00),
+('Alice Johnson', 'Chicago', 4500.00, 4500.00),
+('Robert Brown', 'Houston', 6000.00, 2000.00),
+('Emily Davis', 'Phoenix', 2000.00, 2000.00),
+('Michael Wilson', 'Philadelphia', 8000.00, 4000.00),
+('Sarah Moore', 'San Antonio', 3000.00, 5000.00),
+('David Taylor', 'San Diego', 4000.00, 6000.00),
+('Laura White', 'Dallas', 1000.00, 2000.00),
+('James Harris', 'San Jose', 9000.00, 1000.00);
+
+-- 1. Display the list of customers having high credit and low debit values using functions.
+SELECT * FROM customer
+WHERE credit = debit;
+
+
+DELIMITER $$
+
+CREATE FUNCTION count_high_credit_low_debit()
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE total INT;
+    SELECT COUNT(*) INTO total
+    FROM customer
+    WHERE credit > 5000 AND debit < 3000;
+    RETURN total;
+END$$
+
+DELIMITER ;
+
+-- Call the function
+SELECT count_high_credit_low_debit() AS result;
+
+
+-- 2. Display the list of customers having same credit and debit values or greater debit
+DELIMITER $$
+
+CREATE PROCEDURE same_or_higher_debit()
+BEGIN
+    SELECT *
+    FROM customer
+    WHERE credit = debit OR debit > credit;
+END$$
+
+DELIMITER ;
+
+CALL same_or_higher_debit();
+
+CREATE VIEW same_or_higher_debit_view AS
+SELECT *
+FROM customer
+WHERE credit = debit OR debit > credit;
+
+SELECT * FROM same_or_higher_debit_view;
+
+-- 3. Display the name and city of customer using cursor
+DELIMITER $$
+
+CREATE PROCEDURE display_customer_name_city()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE cust_name VARCHAR(100);
+    DECLARE cust_city VARCHAR(100);
+    DECLARE cur CURSOR FOR SELECT name, city FROM customer;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur INTO cust_name, cust_city;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        SELECT CONCAT(cust_name, ', ', cust_city) AS customer_info;
+    END LOOP;
+
+    CLOSE cur;
+END$$
+
+DELIMITER ;
+
+-- Call the procedure
+CALL display_customer_name_city();
+
+-- 4. Display the list of first five customers
+SELECT * FROM customer
+LIMIT 5;
+
+-- 5. Display 8and 9 no. customers from the collection
+SELECT * FROM customer
+LIMIT 7, 2;
+
+-- 6. Display the list of customers in ascending order of city.
+SELECT * FROM customer
+ORDER BY city ASC;
+
+-- 7. Query to Rename the collection to new_customer
+RENAME TABLE customer TO new_customer;
+
+-- 8. Display the mongodb configuration details
+SHOW VARIABLES;
+
+-- 9. Write a query to drop the collection.
+DROP TABLE new_customer;
